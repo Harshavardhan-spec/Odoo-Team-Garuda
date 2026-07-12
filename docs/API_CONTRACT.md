@@ -1511,3 +1511,44 @@ All successful responses must wrap their payload under the `data` key:
 - **Last Updated**: 2026-07-12
 - **Developer**: Database & API Team
 
+---
+
+### User Registration Endpoint (POST /api/auth/register/)
+- **Method**: `POST`
+- **Route**: `/api/auth/register/`
+- **Purpose**: Register a new user profile on the platform.
+- **Authentication**: None (Overridden to AllowAny)
+- **Allowed Roles**: Unauthenticated public users
+- **Request**:
+  ```json
+  {
+    "username": "newuser",
+    "email": "newuser@transitops.com",
+    "first_name": "New",
+    "last_name": "User",
+    "password": "SecurePassword123",
+    "role": "dispatcher"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "message": "User registered successfully.",
+    "data": {
+      "id": 12,
+      "username": "newuser",
+      "email": "newuser@transitops.com",
+      "first_name": "New",
+      "last_name": "User",
+      "role": "dispatcher"
+    }
+  }
+  ```
+- **Validation Rules**: `username` and `email` must be unique. `password` must be at least 8 characters. `role` choices: `fleet_manager`, `dispatcher`, `safety_officer`, `financial_analyst`.
+- **Possible Errors**: `400 Bad Request` (Duplicate username/email, or password complexity failures).
+- **Version**: 1.2.0
+- **Last Updated**: 2026-07-12
+- **Developer**: API Gatekeeper
+
+

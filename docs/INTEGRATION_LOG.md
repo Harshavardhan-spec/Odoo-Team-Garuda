@@ -46,4 +46,19 @@ Resolved: Centralized status choices (VehicleStatus, DriverStatus, TripStatus, E
 Pending: Reconcile database model fields to align with API contract.
 Remarks: Decoupled environment files loaded properly, django check passes cleanly. Centralized helpers are ready for view layer overrides.
 ----------------------------------------------------
+Date/Time: 2026-07-12 03:30 PM
+Feature: Authentication Registration Permission Override
+Developer: API Gatekeeper
+Branch: develop
+Backend Modules: authentication
+Frontend Modules: None
+Database Tables: authentication_user
+Endpoints: /api/auth/register/
+Integration Result: Success
+Issues: None
+Resolved: Overrode `permission_classes` to `AllowAny` on `RegisterView` to bypass the global `IsAuthenticated` check. Wrote 5 core tests (verifying public registration, uniqueness validation, login, profile me endpoint protection, and password change auth) in tests.py. Installed missing `django-cors-headers` dependency in virtualenv and added it to requirements.txt.
+Pending: Reconcile database model fields.
+Remarks: Integration unit tests ran successfully (11/11 passing).
+----------------------------------------------------
+
 
