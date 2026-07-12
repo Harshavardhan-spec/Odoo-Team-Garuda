@@ -10,6 +10,9 @@ from .views import (
     MeView,
     LogoutView,
     LoginView,
+    MeView,
+    ChangePasswordView,
+    FleetManagerOnlyView,
 )
 
 urlpatterns = [
@@ -22,4 +25,6 @@ urlpatterns = [
     path("me/", MeView.as_view(), name="me"),
 
     path("logout/", LogoutView.as_view(), name="logout"),
+    path("change-password/",ChangePasswordView.as_view(),name="change-password"),
+    path("fleet-manager/",FleetManagerOnlyView.as_view(),name="fleet-manager"),
 ]
