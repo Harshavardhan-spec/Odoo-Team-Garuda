@@ -32,3 +32,18 @@ Resolved: Configured simplejwt and rest_framework in settings.py, declared defau
 Pending: Reconcile database model naming mismatches with docs/API_CONTRACT.md and implement backend validation, CRUD overrides, and custom endpoint actions.
 Remarks: DRF routing and authentication infrastructure are fully operational. Django manage.py checks pass.
 ----------------------------------------------------
+Date/Time: 2026-07-12 02:15 PM
+Feature: Validators, Constants, and Decoupled Environment Config
+Developer: API Architect
+Branch: develop
+Backend Modules: config, common (constants, validators)
+Frontend Modules: None
+Database Tables: None
+Endpoints: None
+Integration Result: Success
+Issues: None
+Resolved: Centralized status choices (VehicleStatus, DriverStatus, TripStatus, ExpenseType, MaintenanceStatus) in constants.py. Created reusable validation functions (availability, capacity, and active licenses checking) in validators.py. Decoupled Django settings configurations (secret keys, databases connection flags, allowed hosts, and debug variables) using decouple and generated an .env.example.
+Pending: Reconcile database model fields to align with API contract.
+Remarks: Decoupled environment files loaded properly, django check passes cleanly. Centralized helpers are ready for view layer overrides.
+----------------------------------------------------
+
