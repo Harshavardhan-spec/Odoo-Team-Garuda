@@ -11,6 +11,12 @@ VALID_FUEL_TYPES = ["PETROL", "DIESEL", "CNG", "EV"]
 
 @transaction.atomic
 def create_vehicle(data):
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "copy"):
+        data = data.copy()
+    else:
+        data = dict(data)
     """
     Business Logic:
     1. Registration number must be unique.
@@ -64,6 +70,12 @@ def create_vehicle(data):
 
 @transaction.atomic
 def update_vehicle(vehicle_id, data):
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "copy"):
+        data = data.copy()
+    else:
+        data = dict(data)
     """
     Business Logic:
     1. Vehicle must exist.
