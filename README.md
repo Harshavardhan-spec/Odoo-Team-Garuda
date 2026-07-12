@@ -1,166 +1,227 @@
 # TransitOps – Smart Transport Operations Platform
 
-TransitOps is an enterprise-grade Transport Operations ERP platform designed to manage Vehicles, Drivers, Trips, Maintenance logs, Fuel tracking, Expenses, and Analytics. This repository contains the complete modular blueprint to support parallel development across a team of four software engineers.
+TransitOps is an enterprise-grade Transport Operations ERP platform designed to manage vehicle registries, driver compliance, trip schedules, maintenance tasks, fuel usage logs, and operational expenses in one unified system.
 
 ---
 
-## 🏗️ Architecture Design
+## Overview
 
-The platform uses a modular, scalable architecture inspired by production ERP software:
+TransitOps solves the operational inefficiencies of manual and fragmented logistics management by digitizing key transport processes:
 
-### Backend (FastAPI + SQLAlchemy 2.0 + Alembic + PostgreSQL)
-- **Modular Layout**: All operational boundaries (Vehicles, Drivers, Trips, etc.) are separated into independent domain modules across the models, schemas, routers, and services layer.
-- **Service Layer Pattern**: Mediates transactions between raw API endpoints and database access layers to ensure testability and isolate business rules.
-- **Repository/CRUD Base Pattern**: A generic database access layer reduces boilerplate and accelerates model implementation.
-- **RBAC & Security**: Integrated JWT verification and access control policies checking resource authorization thresholds dynamically.
-
-### Frontend (React + Vite + TailwindCSS)
-- **Component isolation**: Fully decoupled layout view blocks, global contexts (Auth), utility formatters, and service clients.
-- **Axios Interceptor Interlocks**: Automatic injection of Authorization headers and automatic session termination on unauthorized errors.
-- **Tailwind Grid theme**: Customized styles with smooth gradients, dark mode parameters, and responsive sidebar.
+- **Vehicle Registry**: Fleet registry management tracking capacity parameters and real-time operational status.
+- **Driver Management**: Operator records keeping track of active licensing and availability.
+- **Trip Management**: Route coordination, cargo assignments, and real-time dispatch tracking.
+- **Maintenance**: Logging mechanical issues, service schedules, and repair history.
+- **Fuel Logs**: Fuel efficiency analysis, consumption tracking, and fill-up records.
+- **Expenses**: Comprehensive operational cost management with approval limits.
+- **Analytics**: Fleet operations and financial cost aggregation.
 
 ---
 
-## 📂 Project Structure
+## Tech Stack
+
+### Frontend
+- **React**: Component-based UI library.
+- **Vite**: High-performance frontend build tool.
+- **Tailwind CSS**: Utility-first CSS styling.
+- **React Router**: Client-side routing.
+- **Axios**: HTTP client with request interceptors.
+
+### Backend
+- **Django**: Robust web framework.
+- **Django REST Framework**: REST API toolkit.
+
+### Database
+- **PostgreSQL**: Relational database.
+
+### Authentication
+- **Django Authentication**: User security and access controls.
+- **JWT**: Secure token-based session handling.
+
+### Version Control
+- **Git**: Version control.
+- **GitHub**: Project hosting and collaboration.
+
+---
+
+## Project Architecture
+
+TransitOps is built using a modular ERP architecture. The backend contains isolated Django apps representing distinct operational domains (e.g., vehicles, drivers, trips, maintenance). The backend exposes clean REST APIs consumed by corresponding React services and page layouts on the frontend. This decoupling minimizes cross-module dependencies and supports parallel development.
+
+---
+
+## Project Structure
 
 ```text
-Odoo-Team-Garuda/
-├── backend/
-│   ├── alembic/                  # Database schema migrations
-│   │   ├── versions/             # Migration files
-│   │   └── env.py                # Alembic environment hook
-│   ├── app/
-│   │   ├── api/                  # API endpoints and routers
-│   │   │   ├── v1/
-│   │   │   │   ├── endpoints/    # Feature routers (auth, vehicles, trips, etc.)
-│   │   │   │   └── router.py     # Main router grouping endpoints
-│   │   │   └── deps.py           # Dependency injection (DB session, auth checks)
-│   │   ├── core/                 # Configuration, exception handling, logging
-│   │   ├── crud/                 # CRUD classes (base helper and specific queries)
-│   │   ├── models/               # SQLAlchemy Declarative models
-│   │   ├── schemas/              # Pydantic schemas (DTO validation)
-│   │   ├── services/             # Core business logic layer placeholders
-│   │   └── main.py               # FastAPI entrypoint
-│   ├── alembic.ini               # Alembic config
-│   ├── requirements.txt          # Python package requirements
-│   └── .env.example              # Env configuration template
-├── frontend/
-│   ├── src/
-│   │   ├── components/           # Generic reusable UI (Button, Card, Table, etc.)
-│   │   ├── context/              # Auth context for JWT session handling
-│   │   ├── hooks/                # Custom hooks (useAuth, useAxios)
-│   │   ├── layouts/              # Theme layouts (MainLayout, AuthLayout)
-│   │   ├── pages/                # Operational view pages
-│   │   ├── services/             # Endpoint HTTP request wrappers
-│   │   ├── utils/                # Standard formatters and validators
-│   │   ├── App.jsx               # App routing configuration
-│   │   └── main.jsx              # React index mounting
-│   ├── tailwind.config.js        # TailwindCSS configurations
-│   ├── vite.config.js            # Vite configurations
-│   └── .env.example              # Frontend config template
-├── docker-compose.yml            # Multi-service container orchestrator
-└── README.md                     # Documentation
+backend/
+├── config/
+├── authentication/
+├── vehicles/
+├── drivers/
+├── trips/
+├── maintenance/
+├── fuel/
+├── expenses/
+├── dashboard/
+├── reports/
+├── manage.py
+└── requirements.txt
+
+frontend/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── layouts/
+│   ├── services/
+│   ├── context/
+│   ├── hooks/
+│   ├── utils/
+│   ├── routes/
+│   └── assets/
+
+README.md
+docs/
 ```
 
 ---
 
-## ⚡ Quick Start (Docker Compose)
+## Core Modules
 
-The easiest way to spin up the entire stack (Database, Backend, Frontend) with hot-reloading enabled is using Docker Compose:
-
-1. **Clone and Configure Environment Files**
-   Make copies of `.env.example` in both folders:
-   ```bash
-   cp backend/.env.example backend/.env
-   cp frontend/.env.example frontend/.env
-   ```
-
-2. **Run Services**
-   ```bash
-   docker compose up --build
-   ```
-
-3. **Port mappings**:
-   - **Frontend**: `http://localhost:5173`
-   - **Backend API**: `http://localhost:8000`
-   - **OpenAPI Swagger**: `http://localhost:8000/api/v1/docs`
-   - **Database**: Port `5432`
+- **Authentication**: Handles secure user registration, login, and JWT emission.
+- **Vehicle Management**: Maintains vehicle physical records, status, and capacities.
+- **Driver Management**: Tracks driver compliance records, licenses, and shifts.
+- **Trip Management**: Coordinates route dispatch details, cargo weights, and trip state transitions.
+- **Maintenance**: Logs maintenance events, mechanical services, and scheduling.
+- **Fuel Management**: Monitors vehicle fuel logs, odometer changes, and fuel costs.
+- **Expense Management**: Categorizes operational costs and manages expense approvals.
+- **Dashboard**: Consolidates interactive metrics and operational fleet widgets.
+- **Reports**: Generates summaries of costs, fuel, and trip efficiency.
 
 ---
 
-## 🛠️ Local Installation (Without Docker)
+## User Roles
 
-### Backend Setup
+- **Fleet Manager**: Manages vehicles, reviews dashboard performance, and reviews high-value expense submissions.
+- **Dispatcher**: Registers trips, routes cargo, and coordinates driver-vehicle availability checks.
+- **Safety Officer**: Audits driver licensing status, monitors expired certifications, and schedules mechanical inspections.
+- **Financial Analyst**: Evaluates operational and fuel costs, processes expenses, and reviews expense trends.
 
-1. **Navigate & Create Virtual Environment**:
+---
+
+## Business Rules
+
+TransitOps enforces the following key operational constraints:
+
+- **Unique Vehicle Registrations**: Every vehicle must have a unique license plate/registration number.
+- **Unique Driver Licensing**: Driver license numbers must be unique across the driver registry.
+- **Operational Availability during Maintenance**: Vehicles currently undergoing maintenance cannot be dispatched or assigned to active trips.
+- **Driver License Compliance**: Drivers with expired licenses cannot be assigned to any trip.
+- **Single Active Assignment**: A driver cannot be assigned to multiple active trips concurrently.
+- **Weight Limit Enforcement**: Cargo payload weight must not exceed the vehicle's maximum carrying capacity.
+- **Status Restoration**: Completing a trip automatically restores both the vehicle's status and the driver's status to "Available".
+- **Maintenance Status Updates**: Commencing a maintenance session automatically changes the vehicle's status to "Maintenance".
+- **Maintenance Resolution**: Completing a maintenance log restores the vehicle's status to "Available".
+- **Odometer Sequence Check**: Odometer readings on fuel logs and maintenance logs must be greater than or equal to the current recorded mileage of the vehicle.
+- **Financial Controls**: High-value expenses must go through an approval workflow and receive authorization from a Fleet Manager.
+
+---
+
+## Backend Setup
+
+To set up and run the backend locally, execute the following commands in the `backend/` directory:
+
+1. **Create a virtual environment**:
    ```bash
-   cd backend
-   python3 -m venv venv
-   source venv/bin/activate
+   python -m venv venv
    ```
 
-2. **Install Dependencies**:
+2. **Activate the virtual environment**:
+   - On macOS/Linux:
+     ```bash
+     source venv/bin/activate
+     ```
+   - On Windows (Command Prompt):
+     ```cmd
+     venv\Scripts\activate
+     ```
+
+3. **Install dependencies**:
    ```bash
-   pip install --upgrade pip
    pip install -r requirements.txt
    ```
 
-3. **Configure Environment Variables**:
-   Update `backend/.env` with your local PostgreSQL parameters.
-
-4. **Run Database Migrations (Alembic)**:
+4. **Apply database migrations**:
    ```bash
-   # Generate initial migration script
-   alembic revision --autogenerate -m "initial_schema"
-   
-   # Apply migration to database
-   alembic upgrade head
+   python manage.py migrate
    ```
 
-5. **Start FastAPI Dev Server**:
+5. **Start the development server**:
    ```bash
-   uvicorn app.main:app --reload
+   python manage.py runserver
    ```
 
-### Frontend Setup
+---
 
-1. **Navigate & Install NPM Dependencies**:
+## Frontend Setup
+
+To set up and run the frontend locally, execute the following commands in the `frontend/` directory:
+
+1. **Install dependencies**:
    ```bash
-   cd frontend
    npm install
    ```
 
-2. **Start Dev Server**:
+2. **Start the development server**:
    ```bash
    npm run dev
    ```
 
 ---
 
-## 🧑‍💻 Developer Guide: Parallel Workflows
+## Git Workflow
 
-To support four developers working in parallel without merge conflicts, follow this feature separation guide:
+The project uses branch segmentation for clean collaborative features integration:
 
-### Developer 1: Authentication & User Accounts (User, Role)
-- **API File**: [api/v1/endpoints/users.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/api/v1/endpoints/users.py) & [auth.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/api/v1/endpoints/auth.py)
-- **Services File**: [services/user.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/services/user.py)
-- **Frontend File**: [context/AuthContext.jsx](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/frontend/src/context/AuthContext.jsx) & [pages/Login.jsx](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/frontend/src/pages/Login.jsx)
-- **Focus**: Wire real JWT validations, hashing, login actions, and user roles logic.
+```text
+main (Production-ready stable code)
+  ↓
+develop (Integration environment branch)
+  ↓
+feature/<module> (Feature branches per developer assignment)
+```
 
-### Developer 2: Dispatch & Trip Tracking (Vehicles, Drivers, Trips)
-- **API File**: [endpoints/vehicles.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/api/v1/endpoints/vehicles.py), [drivers.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/api/v1/endpoints/drivers.py), & [trips.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/api/v1/endpoints/trips.py)
-- **Services File**: [services/trip.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/services/trip.py)
-- **Frontend Pages**: [pages/Vehicles.jsx](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/frontend/src/pages/Vehicles.jsx), [Drivers.jsx](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/frontend/src/pages/Drivers.jsx), [Trips.jsx](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/frontend/src/pages/Trips.jsx)
-- **Focus**: Vehicle registries, driver allocations, trip schedules, and location transitions.
+- Developer works on domain-specific branches (e.g., `feature/trips`, `feature/authentication`).
+- Pull requests are targeting the `develop` branch for integration testing.
+- Verified changes are merged into the `main` branch.
 
-### Developer 3: Maintenance & Mechanical Safety (MaintenanceLog, FuelLog)
-- **API File**: [endpoints/maintenance.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/api/v1/endpoints/maintenance.py) & [fuel.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/api/v1/endpoints/fuel.py)
-- **Services File**: [services/maintenance.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/services/maintenance.py)
-- **Frontend Pages**: [pages/Maintenance.jsx](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/frontend/src/pages/Maintenance.jsx), [Fuel.jsx](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/frontend/src/pages/Fuel.jsx)
-- **Focus**: Log oil checks, brake inspections, refueling cost reports, and fuel efficiency metrics.
+---
 
-### Developer 4: Financial Auditing & Dashboard (Expense, User Roles)
-- **API File**: [endpoints/expenses.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/api/v1/endpoints/expenses.py)
-- **Services File**: [services/expense.py](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/backend/app/services/expense.py)
-- **Frontend Pages**: [pages/Expenses.jsx](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/frontend/src/pages/Expenses.jsx) & [pages/Dashboard.jsx](file:///Users/ashu/Documents/VMEG/Hackathons/ODOO/Code/Odoo-Team-Garuda/frontend/src/pages/Dashboard.jsx)
-- **Focus**: Fuel/maintenance expense logs, manager approval routes, metrics calculations, and dashboard layout summaries.
+## Development Guidelines
+
+- **Modular Architecture**: Design code domains separately to prevent high coupling.
+- **REST APIs**: Design clean REST resources with unified JSON responses and appropriate status codes.
+- **Meaningful Commits**: Write informative commit logs summarizing change contexts.
+- **No Hardcoded Data**: Externalize API endpoints, ports, and configuration keys to environment files.
+- **Validate Business Rules**: Validate logic both on the frontend interface and at the backend database/service layers.
+- **Keep Modules Independent**: Avoid direct modules cross-importing where possible.
+- **Clean Code**: Write readable, well-commented code following team conventions.
+- **Follow SOLID Principles**: Write extensible, single-responsibility components and functions.
+
+---
+
+## Documentation
+
+Detailed documentation is stored in the `docs/` folder:
+
+- **API_CONTRACT.md**: Outlines endpoint signatures, request structures, and response JSON formats.
+- **DATABASE_SCHEMA.md**: Explains PostgreSQL tables, schemas, relations, and index choices.
+- **BUSINESS_RULES.md**: Details specific compliance rules and validation workflows.
+- **TEAM_ASSIGNMENTS.md**: Outlines modules assignments and developer responsibilities.
+- **IMPLEMENTATION_LOGS/**: Contains dev journals recording implementation steps and architectural decisions.
+
+---
+
+## Team
+
+- **Team Garuda**
+- **Odoo Hiring Hackathon**
