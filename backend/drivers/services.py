@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from datetime import date
 
 from .models import Driver
 from vehicles.models import Vehicle
@@ -13,13 +14,12 @@ from trips.models import Trip
 
 @transaction.atomic
 def create_driver(data):
-    """
-    Business Rules:
-    1. License number must be unique.
-    2. License expiry must be in future.
-    3. Phone number required.
-    4. Safety score between 0 and 100.
-    """
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "copy"):
+        data = data.copy()
+    else:
+        data = dict(data)
 
     license_number = (
         data.get("license_number", "")
@@ -39,10 +39,23 @@ def create_driver(data):
             "Driver with this license already exists."
         )
 
-    if data.get("license_expiry") <= timezone.now().date():
+    license_expiry_val = data.get("license_expiry")
+    if not license_expiry_val:
+        raise ValidationError("License expiry date is required.")
+
+    if isinstance(license_expiry_val, str):
+        try:
+            license_expiry = date.fromisoformat(license_expiry_val)
+        except ValueError:
+            raise ValidationError("Invalid license expiry date format. Must be YYYY-MM-DD.")
+    else:
+        license_expiry = license_expiry_val
+
+    if license_expiry <= timezone.now().date():
         raise ValidationError(
             "Driver license has expired."
         )
+    data["license_expiry"] = license_expiry
 
     if not data.get("phone_number"):
         raise ValidationError(
@@ -67,6 +80,12 @@ def create_driver(data):
 
 @transaction.atomic
 def update_driver(driver_id, data):
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "copy"):
+        data = data.copy()
+    else:
+        data = dict(data)
 
     try:
         driver = Driver.objects.get(id=driver_id)
@@ -83,11 +102,20 @@ def update_driver(driver_id, data):
         )
 
     if "license_expiry" in data:
+        expiry_val = data["license_expiry"]
+        if isinstance(expiry_val, str):
+            try:
+                expiry_date = date.fromisoformat(expiry_val)
+            except ValueError:
+                raise ValidationError("Invalid license expiry date format. Must be YYYY-MM-DD.")
+        else:
+            expiry_date = expiry_val
 
-        if data["license_expiry"] <= timezone.now().date():
+        if expiry_date <= timezone.now().date():
             raise ValidationError(
                 "License expiry must be in the future."
             )
+        data["license_expiry"] = expiry_date
 
     if "safety_score" in data:
 

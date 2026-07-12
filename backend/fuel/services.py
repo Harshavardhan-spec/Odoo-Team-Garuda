@@ -14,6 +14,12 @@ from trips.models import Trip
 
 @transaction.atomic
 def create_fuel_log(data):
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "copy"):
+        data = data.copy()
+    else:
+        data = dict(data)
     """
     Business Rules:
     1. Vehicle must exist.
@@ -152,6 +158,12 @@ def create_fuel_log(data):
 
 @transaction.atomic
 def update_fuel_log(fuel_log_id, data):
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "copy"):
+        data = data.copy()
+    else:
+        data = dict(data)
 
     try:
         fuel_log = FuelLog.objects.get(id=fuel_log_id)

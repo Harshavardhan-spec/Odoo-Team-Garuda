@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.core.exceptions import ValidationError
+from datetime import date
 
 from .models import Expense
 from vehicles.models import Vehicle
@@ -12,6 +13,12 @@ from trips.models import Trip
 
 @transaction.atomic
 def create_expense(data):
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "copy"):
+        data = data.copy()
+    else:
+        data = dict(data)
 
     vehicle_id = data.get("vehicle")
     trip_id = data.get("trip")
@@ -39,13 +46,29 @@ def create_expense(data):
             "Expense amount must be greater than zero."
         )
 
+    expense_type = data.get("expense_type")
+    if not expense_type:
+        raise ValidationError("Expense type is required.")
+
+    expense_date_val = data.get("expense_date")
+    if not expense_date_val:
+        raise ValidationError("Expense date is required.")
+
+    if isinstance(expense_date_val, str):
+        try:
+            expense_date = date.fromisoformat(expense_date_val)
+        except ValueError:
+            raise ValidationError("Invalid expense date format. Must be YYYY-MM-DD.")
+    else:
+        expense_date = expense_date_val
+
     expense = Expense.objects.create(
         vehicle=vehicle,
         trip=trip,
-        expense_type=data["expense_type"],
+        expense_type=expense_type,
         amount=amount,
         description=data.get("description", ""),
-        expense_date=data["expense_date"],
+        expense_date=expense_date,
         remarks=data.get("remarks", "")
     )
 
@@ -58,6 +81,12 @@ def create_expense(data):
 
 @transaction.atomic
 def update_expense(expense_id, data):
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "copy"):
+        data = data.copy()
+    else:
+        data = dict(data)
 
     try:
         expense = Expense.objects.get(id=expense_id)
@@ -71,6 +100,17 @@ def update_expense(expense_id, data):
             raise ValidationError(
                 "Expense amount must be greater than zero."
             )
+
+    if "expense_date" in data:
+        expense_date_val = data["expense_date"]
+        if isinstance(expense_date_val, str):
+            try:
+                expense_date = date.fromisoformat(expense_date_val)
+            except ValueError:
+                raise ValidationError("Invalid expense date format. Must be YYYY-MM-DD.")
+        else:
+            expense_date = expense_date_val
+        data["expense_date"] = expense_date
 
     for key, value in data.items():
         setattr(expense, key, value)

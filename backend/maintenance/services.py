@@ -1,6 +1,7 @@
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from datetime import date
 
 from .models import Maintenance
 from vehicles.models import Vehicle
@@ -13,6 +14,12 @@ from trips.models import Trip
 
 @transaction.atomic
 def create_maintenance(data):
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "copy"):
+        data = data.copy()
+    else:
+        data = dict(data)
 
     vehicle_id = data.get("vehicle")
 
@@ -44,13 +51,44 @@ def create_maintenance(data):
             "Maintenance cost cannot be negative."
         )
 
+    maintenance_type = data.get("maintenance_type")
+    if not maintenance_type:
+        raise ValidationError("Maintenance type is required.")
+
+    start_date_val = data.get("start_date")
+    if not start_date_val:
+        raise ValidationError("Start date is required.")
+
+    if isinstance(start_date_val, str):
+        try:
+            start_date = date.fromisoformat(start_date_val)
+        except ValueError:
+            raise ValidationError("Invalid start date format. Must be YYYY-MM-DD.")
+    else:
+        start_date = start_date_val
+
+    end_date_val = data.get("end_date")
+    if end_date_val:
+        if isinstance(end_date_val, str):
+            try:
+                end_date = date.fromisoformat(end_date_val)
+            except ValueError:
+                raise ValidationError("Invalid end date format. Must be YYYY-MM-DD.")
+        else:
+            end_date = end_date_val
+    else:
+        end_date = None
+
+    if end_date and end_date < start_date:
+        raise ValidationError("End date cannot be before start date.")
+
     maintenance = Maintenance.objects.create(
         vehicle=vehicle,
-        maintenance_type=data["maintenance_type"],
+        maintenance_type=maintenance_type,
         description=data.get("description", ""),
         cost=cost,
-        start_date=data["start_date"],
-        end_date=data.get("end_date"),
+        start_date=start_date,
+        end_date=end_date,
         status="ACTIVE"
     )
 
@@ -100,6 +138,12 @@ def complete_maintenance(maintenance_id):
 
 @transaction.atomic
 def update_maintenance(maintenance_id, data):
+    if hasattr(data, "dict"):
+        data = data.dict()
+    elif hasattr(data, "copy"):
+        data = data.copy()
+    else:
+        data = dict(data)
 
     try:
         maintenance = Maintenance.objects.get(id=maintenance_id)
@@ -118,6 +162,31 @@ def update_maintenance(maintenance_id, data):
             raise ValidationError(
                 "Maintenance cost cannot be negative."
             )
+
+    if "start_date" in data:
+        start_date_val = data["start_date"]
+        if isinstance(start_date_val, str):
+            try:
+                start_date = date.fromisoformat(start_date_val)
+            except ValueError:
+                raise ValidationError("Invalid start date format. Must be YYYY-MM-DD.")
+        else:
+            start_date = start_date_val
+        data["start_date"] = start_date
+
+    if "end_date" in data:
+        end_date_val = data["end_date"]
+        if end_date_val:
+            if isinstance(end_date_val, str):
+                try:
+                    end_date = date.fromisoformat(end_date_val)
+                except ValueError:
+                    raise ValidationError("Invalid end date format. Must be YYYY-MM-DD.")
+            else:
+                end_date = end_date_val
+            data["end_date"] = end_date
+        else:
+            data["end_date"] = None
 
     for key, value in data.items():
         setattr(maintenance, key, value)
