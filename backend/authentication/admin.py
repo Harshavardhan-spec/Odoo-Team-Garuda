@@ -1,3 +1,1 @@
-from django.contrib import admin
-
-# Register your models here.
+# Custom authentication models would be registered here.

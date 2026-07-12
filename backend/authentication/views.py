@@ -1,3 +1,1 @@
-from django.shortcuts import render
-
-# Create your views here.
+# Standard JWT views are registered directly in urls.py using simplejwt.
