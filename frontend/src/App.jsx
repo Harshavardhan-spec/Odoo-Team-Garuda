@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, AuthContext } from './context/AuthContext';
 
 // Layout wrappers
 import MainLayout from './layouts/MainLayout';
@@ -19,12 +19,22 @@ import NotFound from './pages/NotFound';
 
 /**
  * Route guard component to check authorization state.
- * Currently configured to pass through for out-of-the-box boilerplate compilation.
+ * Redirects unauthenticated users to /login
  */
 const ProtectedRoute = ({ children }) => {
-  // TODO: Integrate with AuthContext states to redirect unauthenticated users to /login
-  return children;
+  const { isAuthenticated, loading } = useContext(AuthContext);
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+  
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
+
 
 const App = () => {
   return (

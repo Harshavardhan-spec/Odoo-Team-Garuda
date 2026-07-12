@@ -1,18 +1,25 @@
-// TODO: Implement vehicle query API calls (getAll, getById, create, update, delete)
+import api from './api';
+
 export const vehicleService = {
   getAll: async () => {
-    return [];
+    const res = await api.get('/vehicles/');
+    return res.data;
   },
-  getById: async () => {
-    return {};
+  getById: async (id) => {
+    const res = await api.get(`/vehicles/${id}/`);
+    return res.data;
   },
-  create: async () => {
-    return {};
+  create: async (data) => {
+    const res = await api.post('/vehicles/create/', data);
+    return res.data;
   },
-  update: async () => {
-    return {};
+  update: async (id, data) => {
+    const res = await api.put(`/vehicles/update/${id}/`, data);
+    return res.data;
   },
-  delete: async () => {
-    return {};
+  delete: async (id) => {
+    const res = await api.delete(`/vehicles/delete/${id}/`);
+    return res.data;
   },
 };
+

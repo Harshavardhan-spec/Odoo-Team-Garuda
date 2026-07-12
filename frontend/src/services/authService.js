@@ -1,9 +1,13 @@
-// TODO: Implement authentication service methods (login, get current user info)
+import api from './api';
+
 export const authService = {
-  login: async () => {
-    return {};
+  login: async (username, password) => {
+    const res = await api.post('/auth/login/', { username, password });
+    return res.data;
   },
   getCurrentUser: async () => {
-    return {};
+    const res = await api.get('/auth/me/');
+    return res.data;
   },
 };
+

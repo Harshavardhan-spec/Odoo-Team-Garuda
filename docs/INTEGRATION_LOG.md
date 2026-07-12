@@ -116,6 +116,28 @@ Resolved: Fixed Driver date comparison crashes by adding isoformat date parsing;
 Pending: Reconcile database model fields.
 Remarks: Integration unit tests pass cleanly (22/22 passing).
 ----------------------------------------------------
+Date/Time: 2026-07-12 05:10 PM
+Feature: Frontend JWT & Route Protection Integration Fix
+Developer: Senior Integration Engineer
+Branch: develop
+Backend Modules: None
+Frontend Modules: App, context/AuthContext, services/api, services/authService
+Database Tables: None
+Endpoints: /api/vehicles/, /api/drivers/, /api/trips/, /api/maintenance/, /api/fuel/, /api/expenses/, /api/dashboard/, /api/reports/
+Integration Result: Success
+Issues: Protected views returned HTTP 401 Unauthorized because:
+1. ProtectedRoute guard in App.jsx did not check authentication state, allowing unauthenticated requests to pass.
+2. Stale or empty localStorage tokens were sent on protected routes.
+3. Axios lacked response interceptors to catch 401s and force redirect to /login.
+Resolved:
+1. Refactored ProtectedRoute to check `isAuthenticated` from AuthContext and redirect to /login if unauthenticated.
+2. Added Axios response interceptors to automatically clear localStorage tokens and redirect on HTTP 401 errors.
+3. Configured request interceptor to dynamically inject latest `Authorization: Bearer <token>` header.
+4. Implemented real auth service requests in authService.js.
+Pending: None
+Remarks: Frontend production build runs cleanly (Pass). Backend API tests continue to pass (22/22 Pass).
+----------------------------------------------------
+
 
 
 
