@@ -1,1 +1,6 @@
-# Custom authentication models would be registered here.
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+
+from .models import User
+
+admin.site.register(User, UserAdmin)
