@@ -1,42 +1,41 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 
-// Layout wrappers
-import MainLayout from './layouts/MainLayout';
-import AuthLayout from './layouts/AuthLayout';
+// Layouts
+import MainLayout from "./layouts/MainLayout";
+import AuthLayout from "./layouts/AuthLayout";
 
-// View Pages
-import Dashboard from './pages/Dashboard';
-import Login from './pages/Login';
-import Vehicles from './pages/Vehicles';
-import Drivers from './pages/Drivers';
-import Trips from './pages/Trips';
-import Maintenance from './pages/Maintenance';
-import Fuel from './pages/Fuel';
-import Expenses from './pages/Expenses';
-import NotFound from './pages/NotFound';
+// Pages
+import Dashboard from "./pages/Dashboard";
+import Login from "./pages/Login";
+import Vehicles from "./pages/Vehicles";
+import Drivers from "./pages/Drivers";
+import Trips from "./pages/Trips";
+import Maintenance from "./pages/Maintenance";
+import Fuel from "./pages/Fuel";
+import Expenses from "./pages/Expenses";
+import Reports from "./pages/Reports";
+import NotFound from "./pages/NotFound";
 
-/**
- * Route guard component to check authorization state.
- * Currently configured to pass through for out-of-the-box boilerplate compilation.
- */
+// Route Guard
 const ProtectedRoute = ({ children }) => {
-  // TODO: Integrate with AuthContext states to redirect unauthenticated users to /login
+  // TODO: Replace with authentication check
   return children;
 };
 
-const App = () => {
+function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Public Auth Routes */}
+
+          {/* Public Routes */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<Login />} />
           </Route>
 
-          {/* Secure ERP Operations Routes */}
+          {/* Protected Routes */}
           <Route
             element={
               <ProtectedRoute>
@@ -51,12 +50,14 @@ const App = () => {
             <Route path="/maintenance" element={<Maintenance />} />
             <Route path="/fuel" element={<Fuel />} />
             <Route path="/expenses" element={<Expenses />} />
+            <Route path="/reports" element={<Reports />} />
             <Route path="*" element={<NotFound />} />
           </Route>
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>
   );
-};
+}
 
 export default App;

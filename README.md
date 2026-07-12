@@ -1,12 +1,12 @@
-# TransitOps – Smart Transport Operations Platform
+# Garuda Fleet Erp – Smart Transport Operations Platform
 
-TransitOps is an enterprise-grade Transport Operations ERP platform designed to manage vehicle registries, driver compliance, trip schedules, maintenance tasks, fuel usage logs, and operational expenses in one unified system.
+Garuda Fleet Erp is an enterprise-grade Transport Operations ERP platform designed to manage vehicle registries, driver compliance, trip schedules, maintenance tasks, fuel usage logs, and operational expenses in one unified system.
 
 ---
 
 ## Overview
 
-TransitOps solves the operational inefficiencies of manual and fragmented logistics management by digitizing key transport processes:
+Garuda Fleet Erp solves the operational inefficiencies of manual and fragmented logistics management by digitizing key transport processes:
 
 - **Vehicle Registry**: Fleet registry management tracking capacity parameters and real-time operational status.
 - **Driver Management**: Operator records keeping track of active licensing and availability.
@@ -46,7 +46,7 @@ TransitOps solves the operational inefficiencies of manual and fragmented logist
 
 ## Project Architecture
 
-TransitOps is built using a modular ERP architecture. The backend contains isolated Django apps representing distinct operational domains (e.g., vehicles, drivers, trips, maintenance). The backend exposes clean REST APIs consumed by corresponding React services and page layouts on the frontend. This decoupling minimizes cross-module dependencies and supports parallel development.
+Garuda Fleet Erp is built using a modular ERP architecture. The backend contains isolated Django apps representing distinct operational domains (e.g., vehicles, drivers, trips, maintenance). The backend exposes clean REST APIs consumed by corresponding React services and page layouts on the frontend. This decoupling minimizes cross-module dependencies and supports parallel development.
 
 ---
 
@@ -110,7 +110,7 @@ docs/
 
 ## Business Rules
 
-TransitOps enforces the following key operational constraints:
+Garuda Fleet Erp enforces the following key operational constraints:
 
 - **Unique Vehicle Registrations**: Every vehicle must have a unique license plate/registration number.
 - **Unique Driver Licensing**: Driver license numbers must be unique across the driver registry.

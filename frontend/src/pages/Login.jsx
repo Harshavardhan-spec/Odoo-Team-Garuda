@@ -9,7 +9,7 @@ export default function Login() {
         - Handle credentials status state checks
         - Call authentication services to retrieve JWT token
       */}
-      <h2>Login Page Placeholder</h2>
+      <h2>Garuda Fleet</h2>
     </div>
   );
 }
