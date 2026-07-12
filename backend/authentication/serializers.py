@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 User = get_user_model()
 
@@ -44,7 +46,6 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "role",
         ]
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -71,8 +72,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         }
 
         return data
-    
-from django.contrib.auth.password_validation import validate_password
 
 
 class ChangePasswordSerializer(serializers.Serializer):

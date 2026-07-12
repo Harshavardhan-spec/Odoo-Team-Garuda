@@ -4,12 +4,17 @@ from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import CustomTokenObtainPairSerializer
+
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import ChangePasswordSerializer
-from .serializers import RegisterSerializer, UserSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 from .permissions import IsFleetManager
+from .serializers import (
+    ChangePasswordSerializer,
+    CustomTokenObtainPairSerializer,
+    RegisterSerializer,
+    UserSerializer,
+)
 
 User = get_user_model()
 
@@ -17,6 +22,10 @@ User = get_user_model()
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
+
+
+class LoginView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 
 class MeView(APIView):
@@ -46,9 +55,7 @@ class LogoutView(APIView):
                 {"error": "Invalid refresh token"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        
-class LoginView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+
 
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
@@ -57,13 +64,12 @@ class ChangePasswordView(APIView):
         serializer = ChangePasswordSerializer(data=request.data)
 
         if serializer.is_valid():
-
             user = request.user
 
             if not user.check_password(serializer.validated_data["old_password"]):
                 return Response(
                     {"error": "Old password is incorrect."},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             user.set_password(serializer.validated_data["new_password"])
@@ -71,15 +77,18 @@ class ChangePasswordView(APIView):
 
             return Response(
                 {"message": "Password changed successfully."},
-                status=status.HTTP_200_OK
+                status=status.HTTP_200_OK,
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class FleetManagerOnlyView(APIView):
     permission_classes = [IsFleetManager]
 
     def get(self, request):
-        return Response({
-            "message": f"Welcome {request.user.username}! You are a Fleet Manager."
-        })
+        return Response(
+            {
+                "message": f"Welcome {request.user.username}! You are a Fleet Manager."
+            }
+        )
