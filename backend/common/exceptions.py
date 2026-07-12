@@ -5,11 +5,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework.exceptions import ValidationError as DRFValidationError
+
 def global_exception_handler(exc, context):
     """
     Centralized exception handler to convert all exceptions into standard
     project error payload formatting: { success: False, message: str, errors: dict }
     """
+    if isinstance(exc, DjangoValidationError):
+        if hasattr(exc, 'message_dict'):
+            exc = DRFValidationError(detail=exc.message_dict)
+        elif hasattr(exc, 'messages'):
+            exc = DRFValidationError(detail={"non_field_errors": exc.messages})
+        else:
+            exc = DRFValidationError(detail=str(exc))
+
     response = exception_handler(exc, context)
 
     if response is not None:

@@ -2,122 +2,19 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from .models import Driver
+from .models import Maintenance
 from vehicles.models import Vehicle
 from trips.models import Trip
 
 
-# ==========================
-# CREATE DRIVER
-# ==========================
+# ==========================================
+# CREATE MAINTENANCE
+# ==========================================
 
 @transaction.atomic
-def create_driver(data):
-    """
-    Business Rules:
-    1. License number must be unique.
-    2. License expiry must be in future.
-    3. Phone number required.
-    4. Safety score between 0 and 100.
-    """
+def create_maintenance(data):
 
-    license_number = (
-        data.get("license_number", "")
-        .strip()
-        .upper()
-    )
-
-    data["license_number"] = license_number
-
-    if not license_number:
-        raise ValidationError("License number is required.")
-
-    if Driver.objects.filter(
-        license_number=license_number
-    ).exists():
-        raise ValidationError(
-            "Driver with this license already exists."
-        )
-
-    if data.get("license_expiry") <= timezone.now().date():
-        raise ValidationError(
-            "Driver license has expired."
-        )
-
-    if not data.get("phone_number"):
-        raise ValidationError(
-            "Phone number is required."
-        )
-
-    safety_score = data.get("safety_score", 100)
-
-    if float(safety_score) < 0 or float(safety_score) > 100:
-        raise ValidationError(
-            "Safety score must be between 0 and 100."
-        )
-
-    driver = Driver.objects.create(**data)
-
-    return driver
-
-
-# ==========================
-# UPDATE DRIVER
-# ==========================
-
-@transaction.atomic
-def update_driver(driver_id, data):
-
-    try:
-        driver = Driver.objects.get(id=driver_id)
-
-    except Driver.DoesNotExist:
-        raise ValidationError("Driver not found.")
-
-    if (
-        "license_number" in data
-        and driver.status == "ON_TRIP"
-    ):
-        raise ValidationError(
-            "Cannot change license number while driver is on a trip."
-        )
-
-    if "license_expiry" in data:
-
-        if data["license_expiry"] <= timezone.now().date():
-            raise ValidationError(
-                "License expiry must be in the future."
-            )
-
-    if "safety_score" in data:
-
-        score = float(data["safety_score"])
-
-        if score < 0 or score > 100:
-            raise ValidationError(
-                "Safety score must be between 0 and 100."
-            )
-
-    for key, value in data.items():
-        setattr(driver, key, value)
-
-    driver.save()
-
-    return driver
-
-
-# ==========================
-# ASSIGN VEHICLE
-# ==========================
-
-@transaction.atomic
-def assign_vehicle(driver_id, vehicle_id):
-
-    try:
-        driver = Driver.objects.get(id=driver_id)
-
-    except Driver.DoesNotExist:
-        raise ValidationError("Driver not found.")
+    vehicle_id = data.get("vehicle")
 
     try:
         vehicle = Vehicle.objects.get(id=vehicle_id)
@@ -125,119 +22,192 @@ def assign_vehicle(driver_id, vehicle_id):
     except Vehicle.DoesNotExist:
         raise ValidationError("Vehicle not found.")
 
-    if driver.status != "AVAILABLE":
+    if vehicle.status == "ON_TRIP":
         raise ValidationError(
-            "Driver is not available."
+            "Vehicle is currently on a trip."
         )
 
-    if vehicle.status != "AVAILABLE":
-        raise ValidationError(
-            "Vehicle is not available."
-        )
-
-    driver.assigned_vehicle = vehicle
-    driver.save()
-
-    return driver
-
-
-# ==========================
-# UNASSIGN VEHICLE
-# ==========================
-
-@transaction.atomic
-def unassign_vehicle(driver_id):
-
-    try:
-        driver = Driver.objects.get(id=driver_id)
-
-    except Driver.DoesNotExist:
-        raise ValidationError("Driver not found.")
-
-    driver.assigned_vehicle = None
-    driver.save()
-
-    return driver
-
-
-# ==========================
-# DELETE DRIVER
-# ==========================
-
-@transaction.atomic
-def delete_driver(driver_id):
-
-    try:
-        driver = Driver.objects.get(id=driver_id)
-
-    except Driver.DoesNotExist:
-        raise ValidationError("Driver not found.")
-
-    active_trip = Trip.objects.filter(
-        driver=driver,
-        status="DISPATCHED"
+    active = Maintenance.objects.filter(
+        vehicle=vehicle,
+        status="ACTIVE"
     ).exists()
 
-    if active_trip:
+    if active:
         raise ValidationError(
-            "Driver has an active trip."
+            "Vehicle already has an active maintenance."
         )
 
-    driver.delete()
+    cost = float(data.get("cost", 0))
+
+    if cost < 0:
+        raise ValidationError(
+            "Maintenance cost cannot be negative."
+        )
+
+    maintenance = Maintenance.objects.create(
+        vehicle=vehicle,
+        maintenance_type=data["maintenance_type"],
+        description=data.get("description", ""),
+        cost=cost,
+        start_date=data["start_date"],
+        end_date=data.get("end_date"),
+        status="ACTIVE"
+    )
+
+    vehicle.status = "IN_SHOP"
+    vehicle.save()
+
+    return maintenance
+
+
+# ==========================================
+# COMPLETE MAINTENANCE
+# ==========================================
+
+@transaction.atomic
+def complete_maintenance(maintenance_id):
+
+    try:
+        maintenance = Maintenance.objects.get(id=maintenance_id)
+
+    except Maintenance.DoesNotExist:
+        raise ValidationError("Maintenance record not found.")
+
+    if maintenance.status == "COMPLETED":
+        raise ValidationError(
+            "Maintenance already completed."
+        )
+
+    maintenance.status = "COMPLETED"
+
+    if not maintenance.end_date:
+        maintenance.end_date = timezone.now().date()
+
+    maintenance.save()
+
+    vehicle = maintenance.vehicle
+
+    vehicle.status = "AVAILABLE"
+    vehicle.last_service_date = maintenance.end_date
+    vehicle.save()
+
+    return maintenance
+
+
+# ==========================================
+# UPDATE MAINTENANCE
+# ==========================================
+
+@transaction.atomic
+def update_maintenance(maintenance_id, data):
+
+    try:
+        maintenance = Maintenance.objects.get(id=maintenance_id)
+
+    except Maintenance.DoesNotExist:
+        raise ValidationError("Maintenance record not found.")
+
+    if maintenance.status == "COMPLETED":
+        raise ValidationError(
+            "Completed maintenance cannot be updated."
+        )
+
+    if "cost" in data:
+
+        if float(data["cost"]) < 0:
+            raise ValidationError(
+                "Maintenance cost cannot be negative."
+            )
+
+    for key, value in data.items():
+        setattr(maintenance, key, value)
+
+    maintenance.save()
+
+    return maintenance
+
+
+# ==========================================
+# DELETE MAINTENANCE
+# ==========================================
+
+@transaction.atomic
+def delete_maintenance(maintenance_id):
+
+    try:
+        maintenance = Maintenance.objects.get(id=maintenance_id)
+
+    except Maintenance.DoesNotExist:
+        raise ValidationError("Maintenance record not found.")
+
+    if maintenance.status == "ACTIVE":
+        raise ValidationError(
+            "Cannot delete active maintenance."
+        )
+
+    maintenance.delete()
 
     return True
 
 
-# ==========================
-# DRIVER DETAILS
-# ==========================
+# ==========================================
+# GET SINGLE MAINTENANCE
+# ==========================================
 
-def get_driver_by_id(driver_id):
+def get_maintenance_by_id(maintenance_id):
 
     try:
-        return Driver.objects.get(id=driver_id)
+        return Maintenance.objects.get(id=maintenance_id)
 
-    except Driver.DoesNotExist:
-        raise ValidationError("Driver not found.")
-
-
-# ==========================
-# GET ALL DRIVERS
-# ==========================
-
-def get_all_drivers():
-
-    return Driver.objects.all().order_by("name")
+    except Maintenance.DoesNotExist:
+        raise ValidationError(
+            "Maintenance record not found."
+        )
 
 
-# ==========================
-# AVAILABLE DRIVERS
-# ==========================
+# ==========================================
+# GET ALL MAINTENANCE
+# ==========================================
 
-def get_available_drivers():
+def get_all_maintenances():
 
-    return Driver.objects.filter(
-        status="AVAILABLE"
-    ).order_by("name")
+    return Maintenance.objects.all().order_by("-start_date")
 
 
-# ==========================
-# DRIVERS ON TRIP
-# ==========================
+# ==========================================
+# ACTIVE MAINTENANCE
+# ==========================================
 
-def get_drivers_on_trip():
+def get_active_maintenances():
 
-    return Driver.objects.filter(
-        status="ON_TRIP"
-    ).order_by("name")
+    return Maintenance.objects.filter(
+        status="ACTIVE"
+    )
 
 
-# ==========================
-# OFF DUTY DRIVERS
-# ==========================
+# ==========================================
+# COMPLETED MAINTENANCE
+# ==========================================
 
-def get_off_duty_drivers():
+def get_completed_maintenances():
 
-    return Driver.objects.filter(
-        status="OFF_DUTY"
-    ).order_by("name")
+    return Maintenance.objects.filter(
+        status="COMPLETED"
+    )
+
+
+# ==========================================
+# VEHICLE MAINTENANCE HISTORY
+# ==========================================
+
+def get_vehicle_maintenance(vehicle_id):
+
+    try:
+        Vehicle.objects.get(id=vehicle_id)
+
+    except Vehicle.DoesNotExist:
+        raise ValidationError("Vehicle not found.")
+
+    return Maintenance.objects.filter(
+        vehicle_id=vehicle_id
+    ).order_by("-start_date")

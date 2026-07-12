@@ -60,5 +60,20 @@ Resolved: Overrode `permission_classes` to `AllowAny` on `RegisterView` to bypas
 Pending: Reconcile database model fields.
 Remarks: Integration unit tests ran successfully (11/11 passing).
 ----------------------------------------------------
+Date/Time: 2026-07-12 04:45 PM
+Feature: Refactor ViewSets to Services
+Developer: API Gatekeeper
+Branch: develop
+Backend Modules: drivers, maintenance, expenses, common
+Frontend Modules: None
+Database Tables: drivers_driver, maintenance_maintenance, expenses_expense
+Endpoints: /api/drivers/, /api/maintenance/, /api/expenses/
+Integration Result: Success
+Issues: None
+Resolved: Refactored default CRUD operations inside `DriverViewSet`, `MaintenanceViewSet`, and `ExpenseViewSet` to delegate completely to the service functions. Transposed misplaced driver/maintenance service logic, aligning functions to their correct applications and fixing imports. Configured the global exception handler to convert Django standard ValidationErrors into DRF validation responses.
+Pending: Reconcile database model fields.
+Remarks: Integration unit tests pass cleanly (11/11 passing).
+----------------------------------------------------
+
 
 
