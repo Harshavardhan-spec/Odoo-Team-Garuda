@@ -1371,3 +1371,143 @@ All successful responses must wrap their payload under the `data` key:
   - **Status Code**: `400 Bad Request`
 - **Business Rules**: None
 - **Notes**: None
+
+---
+
+## API Contract Revision Notes (Database Model Alignment)
+
+### Vehicle Endpoints (POST /api/vehicles & PUT /api/vehicles/{id})
+- **Method**: `POST` / `PUT`
+- **Route**: `/api/vehicles` / `/api/vehicles/{id}`
+- **Purpose**: Create or update vehicle records
+- **Authentication**: Yes
+- **Allowed Roles**: `Fleet Manager`
+- **Request**:
+  ```json
+  {
+    "registration_number": "TX-9988-AB",
+    "vehicle_name": "Volvo VNL 860",
+    "vehicle_type": "TRUCK",
+    "max_load_capacity": 25000.00,
+    "odometer": 0.00,
+    "acquisition_cost": 150000.00,
+    "fuel_type": "DIESEL",
+    "current_location": "Main Depot",
+    "status": "AVAILABLE"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "message": "Vehicle recorded successfully.",
+    "data": {
+      "id": 10,
+      "registration_number": "TX-9988-AB",
+      "vehicle_name": "Volvo VNL 860",
+      "vehicle_type": "TRUCK",
+      "max_load_capacity": 25000.00,
+      "odometer": 0.00,
+      "acquisition_cost": 150000.00,
+      "fuel_type": "DIESEL",
+      "current_location": "Main Depot",
+      "status": "AVAILABLE",
+      "created_at": "2026-07-12T10:00:00Z",
+      "updated_at": "2026-07-12T10:05:00Z"
+    }
+  }
+  ```
+- **Validation Rules**: `registration_number` must be unique. `vehicle_type` choices: TRUCK, VAN, BUS, CAR. `fuel_type` choices: PETROL, DIESEL, CNG, EV. `status` choices: AVAILABLE, ON_TRIP, IN_SHOP, RETIRED.
+- **Possible Errors**: `400 Bad Request` (Duplicate key or validation failure), `401 Unauthorized`.
+- **Version**: 1.1.0
+- **Last Updated**: 2026-07-12
+- **Developer**: Database & API Team
+
+---
+
+### Trip Endpoints (POST /api/trips & PUT /api/trips/{id})
+- **Method**: `POST` / `PUT`
+- **Route**: `/api/trips` / `/api/trips/{id}`
+- **Purpose**: Create or update trip details
+- **Authentication**: Yes
+- **Allowed Roles**: `Dispatcher`, `Fleet Manager`
+- **Request**:
+  ```json
+  {
+    "source": "Depot A",
+    "destination": "Depot B",
+    "vehicle": 10,
+    "driver": 5,
+    "cargo_weight": 12000.00,
+    "planned_distance": 350.00
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "message": "Trip logged successfully.",
+    "data": {
+      "id": 42,
+      "source": "Depot A",
+      "destination": "Depot B",
+      "vehicle": 10,
+      "driver": 5,
+      "cargo_weight": 12000.00,
+      "planned_distance": 350.00,
+      "actual_distance": null,
+      "fuel_consumed": null,
+      "revenue": 0.00,
+      "status": "DRAFT"
+    }
+  }
+  ```
+- **Validation Rules**: `source` and `destination` are strings. `cargo_weight` must be <= vehicle `max_load_capacity`. `driver` license must not be expired. Status transitions only from DRAFT -> DISPATCHED -> COMPLETED/CANCELLED.
+- **Possible Errors**: `400 Bad Request` (Weight limits, license validation, status conflict), `401 Unauthorized`.
+- **Version**: 1.1.0
+- **Last Updated**: 2026-07-12
+- **Developer**: Database & API Team
+
+---
+
+### Expense Endpoints (POST /api/expenses & PUT /api/expenses/{id})
+- **Method**: `POST` / `PUT`
+- **Route**: `/api/expenses` / `/api/expenses/{id}`
+- **Purpose**: Create or update operational expenses (Note: `approved` field is absent in Database schema)
+- **Authentication**: Yes
+- **Allowed Roles**: `Dispatcher`, `Financial Analyst`
+- **Request**:
+  ```json
+  {
+    "vehicle": 10,
+    "trip": 42,
+    "expense_type": "TOLL",
+    "amount": 25.00,
+    "description": "Highway toll",
+    "expense_date": "2026-07-12",
+    "remarks": "Paid via transponder"
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "success": true,
+    "message": "Expense log recorded.",
+    "data": {
+      "id": 99,
+      "vehicle": 10,
+      "trip": 42,
+      "expense_type": "TOLL",
+      "amount": 25.00,
+      "description": "Highway toll",
+      "expense_date": "2026-07-12",
+      "remarks": "Paid via transponder"
+    }
+  }
+  ```
+- **Validation Rules**: `expense_type` choices: FUEL, MAINTENANCE, TOLL, INSURANCE, OTHER. `amount` must be a positive decimal.
+- **Possible Errors**: `400 Bad Request` (Invalid FK references, formatting), `401 Unauthorized`.
+- **Version**: 1.1.0
+- **Last Updated**: 2026-07-12
+- **Developer**: Database & API Team
+
